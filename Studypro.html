@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Study Pro</title>
+
+<style>
+:root {
+--bg: #000000;
+--surface: #1c1c1e;
+--surface-2: #2c2c2e;
+--text: #ffffff;
+--text-dim: #8e8e93;
+--accent: #0A84FF;
+--border: rgba(255,255,255,0.1);
+
+--btn-size: 88px;
+--picker-h: 220px;
+
+--green: #30d158; --green-dim: rgba(48, 209, 88, 0.2);
+--orange: #ff9f0a; --orange-dim: rgba(255, 159, 10, 0.2);
+--blue: #0A84FF; --blue-dim: rgba(10, 132, 255, 0.2);
+--red: #ff453a; --red-dim: rgba(255, 69, 58, 0.2);
+}
+
+html, body {
+margin: 0; padding: 0; width: 100%; height: 100%;
+overflow: hidden; background: var(--bg); color: var(--text);
+font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+-webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+
+body { display: flex; flex-direction: column; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+
+.app { display: flex; flex-direction: column; height: 100%; width: 100%; }
+
+/* --- LAYOUT --- */
+.panel-l { flex-grow: 1; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; transition: width 0.3s; }
+.panel-r { height: 35%; background: #000; border-top: 1px solid var(--border); display: flex; flex-direction: column; transition: opacity 0.3s; }
+
+@media (min-width: 768px) and (orientation: landscape) {
+.app { flex-direction: row; }
+.panel-l { height: 100%; width: 60%; border-right: 1px solid var(--border); }
+.panel-r { height: 100%; width: 40%; border-top: 0; }
+}
+
+/* --- HEADER --- */
+.header { width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 15px; flex-shrink: 0; }
+.seg-control { background: var(--surface); padding: 3px; border-radius: 9px; display: flex; width: 200px; height: 32px; margin-bottom: 15px; }
+.seg-btn { flex: 1; border: none; background: none; color: var(--text-dim); font-size: 13px; font-weight: 500; border-radius: 7px; transition: 0.2s; }
+.seg-btn.active { color: #fff; background: #636366; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+/* --- DASHBOARD --- */
+.dashboard { width: 100%; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+
+.dash-row { width: 100%; display: flex; justify-content: space-between; padding: 0 30px; box-sizing: border-box; position: absolute; top: 10px; }
+.stat-box { display: flex; flex-direction: column; align-items: center; }
+.stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.stat-val { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.main-timer { text-align: center; margin: 20px 0; }
+.q-label { font-size: 14px; color: var(--accent); margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.digits { font-size: 18vw; font-weight: 200; font-variant-numeric: tabular-nums; letter-spacing: -2px; line-height: 1; text-shadow: 0 0 30px rgba(0,0,0,0.5); }
+@media (min-width: 768px) { .digits { font-size: 12vw; } }
+
+.topic-timer { display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
+.topic-val { font-size: 32px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--text-dim); }
+
+/* --- CONTROLS --- */
+.ctrls { width: 100%; max-width: 440px; display: flex; justify-content: space-between; align-items: center; padding: 0 30px 40px 30px; box-sizing: border-box; }
+
+.btn { width: var(--btn-size); height: var(--btn-size); border-radius: 50%; border: none; font-size: 18px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); transition: 0.1s; position: relative; color: #fff; }
+.btn:active { transform: scale(0.92); opacity: 0.8; }
+.btn:disabled { opacity: 0.3; transform: none; }
+
+.btn-col { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.btn-sm { width: 56px; height: 56px; font-size: 12px; border-radius: 20px; font-weight: 600; }
+
+.b-grey { background: var(--surface-2); }
+.b-green { background: var(--green-dim); color: var(--green); }
+.b-orange { background: var(--orange-dim); color: var(--orange); }
+.b-blue { background: var(--blue-dim); color: var(--blue); }
+.b-red { background: var(--red-dim); color: var(--red); }
+
+/* --- LIST --- */
+.list-head { padding: 14px 20px; background: rgba(20,20,20,0.95); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 13px; color: var(--text-dim); position: sticky; top: 0; z-index: 5; }
+.list-body { flex: 1; overflow-y: auto; padding: 0 20px 40px 20px; -webkit-overflow-scrolling: touch; }
+
+.row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); font-size: 17px; font-variant-numeric: tabular-nums; align-items: center; }
+.row-idx { color: #666; font-size: 14px; width: 60px; }
+.row-time { color: #fff; font-weight: 500; }
+.row-topic { background: var(--surface-2); color: var(--text-dim); padding: 8px 0; justify-content: center; font-size: 13px; font-weight: 600; border-radius: 8px; margin: 10px 0; border: none; letter-spacing: 1px; }
+
+.hide { display: none !important; }
+
+/* PICKER */
+.picker-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.picker { position: relative; width: 100%; max-width: 320px; height: var(--picker-h); display: flex; justify-content: center; mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent); }
+.picker-bar { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 36px; background: rgba(255,255,255,0.07); border-radius: 8px; pointer-events: none; }
+.picker-col { width: 80px; height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; padding: 0; z-index: 2; }
+.picker-col::-webkit-scrollbar { display: none; }
+.spacer { height: calc(110px - 22px); width: 100%; }
+.item { height: 44px; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #666; scroll-snap-align: center; }
+</style>
+</head>
+<body>
+
+<div class="app">
+<div class="panel-l" id="pl">
+<div class="header">
+<div class="seg-control">
+<button class="seg-btn active" id="tab-sw" onclick="window.app.setMode('sw')">Tracker</button>
+<button class="seg-btn" id="tab-tm" onclick="window.app.setMode('tm')">Timer</button>
+</div>
+</div>
+
+<div class="dashboard" id="dash">
+<div id="setup-view" class="picker-wrap hide">
+<div id="picker" class="picker">
+<div class="picker-bar"></div>
+<div class="picker-col" id="col-h"></div>
+<div class="picker-col" id="col-m"></div>
+<div class="picker-col" id="col-s"></div>
+</div>
+</div>
+
+<div id="active-view" class="dashboard">
+<div class="dash-row">
+<div class="stat-box">
+<span class="stat-label" id="lbl-tot">Total</span>
+<span class="stat-val" id="d-tot">00:00:00</span>
+</div>
+<div class="stat-box">
+<span class="stat-label">Avg / Q</span>
+<span class="stat-val" id="d-avg">--:--</span>
+</div>
+</div>
+
+<div class="main-timer">
+<div class="q-label">Current Question</div>
+<div class="digits" id="d-q">00:00</div>
+</div>
+
+<div class="topic-timer">
+<span class="stat-label">Current Topic Time</span>
+<span class="topic-val" id="d-top">00:00</span>
+</div>
+</div>
+</div>
+
+<div class="ctrls">
+<button id="b-l" class="btn b-blue" onclick="window.app.nextQ()">Next Q</button>
+
+<div class="btn-col">
+<button id="b-top" class="btn btn-sm b-grey" onclick="window.app.finTopic()">Topic</button>
+<button id="b-rst" class="btn btn-sm b-red" onclick="window.app.reset()">Reset</button>
+</div>
+
+<button id="b-r" class="btn b-green" onclick="window.app.toggle()">Start</button>
+</div>
+</div>
+
+<div class="panel-r">
+<div class="list-head">
+<div>Session History</div>
+<div style="color:var(--accent);cursor:pointer;" onclick="window.app.copy()">Copy CSV</div>
+</div>
+<div id="list" class="list-body"></div>
+</div>
+</div>
+
+<script>
+class App {
+constructor() {
+this.st = JSON.parse(localStorage.getItem('study_v9')) || {
+mode: 'sw', // 'sw' or 'tm'
+active: false,
+lastTick: 0,
+
+// Session Stats
+tot: 0, // Total Elapsed (SW) or Remaining (TM)
+elapsed: 0, // Actual Time Spent (For Avg Calc)
+top: 0, // Topic Time
+q: 0, // Question Time
+
+// Config (Timer)
+duration: 0, 
+
+// Counters
+nQ: 1,
+nT: 1,
+hist: [],
+inp: { h:0, m:30, s:0 }
+};
+
+this.ui = {
+dash: {
+active: document.getElementById('active-view'),
+setup: document.getElementById('setup-view'),
+tot: document.getElementById('d-tot'),
+lblTot: document.getElementById('lbl-tot'),
+q: document.getElementById('d-q'),
+top: document.getElementById('d-top'),
+avg: document.getElementById('d-avg')
+},
+ctrl: {
+l: document.getElementById('b-l'),
+r: document.getElementById('b-r'),
+top: document.getElementById('b-top'),
+rst: document.getElementById('b-rst'),
+tabs: { sw: document.getElementById('tab-sw'), tm: document.getElementById('tab-tm') }
+},
+lst: document.getElementById('list')
+};
+
+this.tmr = null;
+this.initPicker();
+this.restore();
+
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && this.st.active) this.tick(); });
+}
+
+save() { localStorage.setItem('study_v9', JSON.stringify(this.st)); }
+
+fmt(ms, full=false) {
+if(ms<0) ms=0;
+let s = Math.floor(ms/1000);
+let h = Math.floor(s/3600);
+let m = Math.floor((s%3600)/60);
+let sec = s%60;
+let str = `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+if(h>0 || full) str = `${h.toString().padStart(2,'0')}:${str}`;
+return str;
+}
+
+// --- CORE LOGIC ---
+tick() {
+clearInterval(this.tmr);
+this.tmr = setInterval(() => {
+if (this.st.active) {
+const now = Date.now();
+const delta = now - this.st.lastTick;
+this.st.lastTick = now;
+
+if (this.st.mode === 'sw') {
+this.st.tot += delta;
+this.st.elapsed += delta;
+} else {
+this.st.tot -= delta; // Countdown
+this.st.elapsed += delta; // Track actual work
+if(this.st.tot <= 0) { this.finishTimer(); return; }
+}
+
+this.st.q += delta;
+this.st.top += delta;
+this.render();
+}
+}, 30);
+}
+
+toggle() {
+if (this.st.active) {
+// Pause
+this.st.active = false;
+} else {
+// Start
+if (this.st.mode === 'tm' && this.st.elapsed === 0) {
+// Initialize Timer from Picker if fresh start
+// Note: We check elapsed === 0 so we don't reset if just paused
+const ms = (this.st.inp.h*3600 + this.st.inp.m*60 + this.st.inp.s)*1000;
+if(ms <= 0) return;
+this.st.tot = ms;
+this.st.duration = ms;
+}
+this.st.active = true;
+this.st.lastTick = Date.now();
+this.tick();
+}
+this.save(); this.render();
+}
+
+nextQ() {
+this.st.hist.push({ type:'q', time: this.st.q, idx: this.st.nQ, topic: this.st.nT });
+this.st.q = 0;
+this.st.nQ++;
+this.save(); this.render();
+}
+
+finTopic() {
+this.st.hist.push({ type:'t', time: this.st.top, idx: this.st.nT });
+if(this.st.q > 1000) {
+this.st.hist.push({ type:'q', time: this.st.q, idx: this.st.nQ, topic: this.st.nT });
+this.st.q = 0;
+this.st.nQ++;
+}
+this.st.top = 0;
+this.st.nT++;
+this.save(); this.render();
+}
+
+reset() {
+if(confirm("Reset Session?")) {
+this.st.active = false;
+this.st.tot = 0;
+this.st.elapsed = 0;
+this.st.q = 0;
+this.st.top = 0;
+this.st.nQ = 1;
+this.st.nT = 1;
+this.st.hist = [];
+this.save();
+this.render();
+}
+}
+
+setMode(m) {
+this.st.mode = m;
+// Reset state on mode switch if idle
+if(!this.st.active && this.st.elapsed === 0) {
+this.st.tot = 0; 
+}
+this.save(); this.render();
+}
+
+finishTimer() {
+this.st.active = false;
+this.st.tot = 0;
+alert("Timer Complete!");
+this.save(); this.render();
+}
+
+// --- RENDERING ---
+render() {
+const run = this.st.active;
+const sw = this.st.mode === 'sw';
+
+// FIXED LOGIC: Simply check if active or if time has accumulated
+const hasStarted = this.st.active || this.st.elapsed > 0;
+
+// 1. View Switching
+// If Timer Mode and Not Started -> Show Setup
+// Otherwise -> Show Active Dashboard
+const showSetup = !sw && !hasStarted;
+this.ui.dash.setup.classList.toggle('hide', !showSetup);
+this.ui.dash.active.classList.toggle('hide', showSetup);
+
+// 2. Tabs
+this.ui.ctrl.tabs.sw.classList.toggle('active', sw);
+this.ui.ctrl.tabs.tm.classList.toggle('active', !sw);
+
+// 3. Stats
+this.ui.dash.lblTot.textContent = sw ? "Total Session" : "Time Left";
+this.ui.dash.tot.textContent = this.fmt(this.st.tot, true);
+this.ui.dash.q.textContent = this.fmt(this.st.q);
+this.ui.dash.top.textContent = this.fmt(this.st.top);
+
+let avg = this.st.elapsed / Math.max(1, this.st.nQ);
+this.ui.dash.avg.textContent = this.fmt(avg);
+
+// 4. Controls
+this.ui.ctrl.r.textContent = run ? "Pause" : (hasStarted ? "Resume" : "Start");
+this.ui.ctrl.r.className = `btn ${run ? 'b-orange' : 'b-green'}`;
+
+this.ui.ctrl.l.disabled = !hasStarted; 
+this.ui.ctrl.top.disabled = !hasStarted; 
+
+// Reset Button: Only active if PAUSED/IDLE and HAS DATA
+this.ui.ctrl.rst.disabled = run || !hasStarted;
+this.ui.ctrl.rst.style.opacity = (run || !hasStarted) ? '0.3' : '1';
+
+this.renderList();
+}
+
+renderList() {
+this.ui.lst.innerHTML = '';
+[...this.st.hist].reverse().forEach(item => {
+const d = document.createElement('div');
+if (item.type === 't') {
+d.className = 'row row-topic';
+d.innerHTML = `TOPIC ${item.idx} &mdash; ${this.fmt(item.time, true)}`;
+} else {
+d.className = 'row';
+d.innerHTML = `<span class="row-idx">Q${item.idx}</span><span class="row-time">${this.fmt(item.time)}</span>`;
+}
+this.ui.lst.appendChild(d);
+});
+}
+
+restore() {
+if(this.st.active) {
+const now = Date.now();
+const delta = now - this.st.lastTick;
+this.st.lastTick = now;
+
+if(this.st.mode === 'sw') {
+this.st.tot += delta;
+} else {
+this.st.tot -= delta;
+if(this.st.tot <= 0) { this.finishTimer(); return; }
+}
+this.st.elapsed += delta;
+this.st.q += delta;
+this.st.top += delta;
+this.tick();
+}
+this.render();
+}
+
+initPicker() {
+const build = (id, max, key) => {
+const c = document.getElementById(id);
+const sp = document.createElement('div'); sp.className='spacer'; c.appendChild(sp);
+for(let i=0; i<=max; i++) {
+const el=document.createElement('div'); el.className='item'; 
+el.textContent=i.toString().padStart(2,'0'); c.appendChild(el);
+}
+c.appendChild(sp.cloneNode(true));
+c.addEventListener('scroll', () => {
+const v = Math.round(c.scrollTop/44);
+this.st.inp[key] = Math.min(v, max);
+}, {passive:true});
+setTimeout(()=>c.scrollTop=this.st.inp[key]*44, 50);
+};
+build('col-h', 23, 'h'); build('col-m', 59, 'm'); build('col-s', 59, 's');
+}
+
+copy() {
+let txt = "STUDY SESSION\n";
+this.st.hist.forEach(i => {
+if(i.type==='t') txt += `--- TOPIC ${i.idx}: ${this.fmt(i.time, true)} ---\n`;
+else txt += `Q${i.idx}: ${this.fmt(i.time)}\n`;
+});
+navigator.clipboard.writeText(txt);
+const o=document.querySelector('.list-head div:last-child');
+o.textContent="Copied!"; setTimeout(()=>o.textContent="Copy CSV",1500);
+}
+}
+window.app = new App();
+</script>
+</body>
+</html>
