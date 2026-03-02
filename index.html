@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Study Clock Pro v2</title>
+<title>Study Clock Pro</title>
 <style>
-/* --- THEME --- */
+/* --- THEME & BASE --- */
 :root {
   --bg: #000000; --surface: #1C1C1E; --surface-2: #2C2C2E; --line: rgba(255,255,255,0.1);
   --text: #ffffff; --text-dim: #8E8E93;
-  --blue: #0A84FF; --green: #32D74B; --orange: #FF9F0A; --red: #FF453A; --purple: #BF5AF2; --teal: #64D2FF;
+  --blue: #0A84FF; --green: #32D74B; --orange: #FF9F0A; --red: #FF453A; --purple: #BF5AF2; --teal: #64D2FF; --indigo: #5E5CE6;
   --font: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
@@ -22,13 +22,11 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--
 .flex-c { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .flex-r { display: flex; align-items: center; justify-content: center; }
 .w-full { width: 100%; }
+.h-full { height: 100%; }
 .scroll-y { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .tabular { font-variant-numeric: tabular-nums; }
 .text-xs { font-size: 10px; font-weight: 700; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; }
-
-/* ICONS */
-svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* LAYOUT */
 .main { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; padding-bottom: 84px; }
@@ -44,7 +42,7 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
 .resizer::after { content: ''; width: 40px; height: 5px; background: var(--text-dim); border-radius: 3px; }
 
 /* BUTTONS & TOGGLES */
-.btn-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500; border: 3px solid #000; cursor: pointer; transition: 0.1s; }
+.btn-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500; border: 3px solid #000; cursor: pointer; transition: transform 0.1s; }
 .btn-circle:active { transform: scale(0.95); opacity: 0.8; }
 .btn-inner { width: 74px; height: 74px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .bg-g { background: rgba(50,215,75,0.2); color: var(--green); }
@@ -53,33 +51,52 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
 .bg-gray { background: var(--surface-2); color: #fff; }
 
 .mode-toggle { background: var(--surface); padding: 4px; border-radius: 8px; display: flex; }
-.mode-btn { padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; color: var(--text-dim); background: none; border: none; flex: 1; }
+.mode-btn { padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; color: var(--text-dim); background: none; border: none; flex: 1; transition: 0.2s; }
 .mode-btn.active { background: var(--surface-2); color: #fff; }
 
-/* STOPWATCH / TIMER */
-.big-time { font-size: 20vw; font-weight: 200; letter-spacing: -2px; line-height: 1; font-family: -apple-system, sans-serif; text-align: center; }
+/* CLOCKS & LISTS */
+.big-time { font-size: 20vw; font-weight: 200; letter-spacing: -2px; line-height: 1; }
 .stats-row { display: flex; width: 100%; justify-content: space-around; margin: 10px 0; }
 .stat-box { text-align: center; }
 .stat-val { font-size: 24px; font-weight: 500; }
-.list-row { display: flex; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid var(--line); font-size: 18px; }
+.list-row { display: flex; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid var(--line); font-size: 18px; position: relative; overflow: hidden;}
+.swipe-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: var(--red); display: flex; align-items: center; justify-content: center; z-index: 1; color: white; }
+.swipe-fg { position: relative; background: #000; z-index: 2; height: 100%; display: flex; justify-content: space-between; align-items: center; width: 100%; transition: transform 0.2s; }
 
 /* SVG RING */
 .ring-svg { transform: rotate(-90deg); width: 260px; height: 260px; margin: 0 auto; display: block; }
 .ring-circle { fill: none; stroke-width: 15; stroke: var(--surface-2); }
 .ring-prog { fill: none; stroke-width: 15; stroke: var(--orange); stroke-linecap: round; transition: stroke-dashoffset 0.1s linear; }
 
-/* INPUTS & FORMS */
-input, select { background: var(--surface); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; margin-bottom: 15px; font-size: 16px; font-family: var(--font); }
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; }
-.modal-overlay.open { opacity: 1; pointer-events: auto; }
-.modal { background: var(--surface); width: 85%; max-width: 320px; border-radius: 20px; padding: 20px; }
-.modal-btn { width: 100%; padding: 16px; background: var(--surface-2); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-
-/* CHARTS */
+/* CHARTS & TIMELINE */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
 .card { background: var(--surface); border-radius: 16px; padding: 15px; }
 .donut-svg { width: 150px; height: 150px; transform: rotate(-90deg); }
 .donut-segment { fill: none; stroke-width: 30; }
+
+.timeline-container { position: relative; height: 600px; width: 100%; background: var(--surface); border-radius: 12px; overflow-y: auto; }
+.tl-hour { height: 60px; border-bottom: 1px dashed var(--line); position: relative; display: flex; align-items: flex-start; padding-left: 5px; color: var(--text-dim); font-size: 10px; }
+.tl-block { position: absolute; left: 50px; right: 10px; border-radius: 6px; border-left: 3px solid; opacity: 0.8; display: flex; align-items: center; padding-left: 8px; font-size: 10px; font-weight: bold; overflow: hidden; }
+
+.bar-chart { display: flex; align-items: flex-end; justify-content: space-around; height: 150px; border-bottom: 1px solid var(--line); padding-bottom: 5px; margin-top: 20px; }
+.bar-col { display: flex; flex-direction: column; justify-content: flex-end; width: 12%; height: 100%; position: relative; }
+.bar-fill { width: 100%; border-radius: 4px 4px 0 0; }
+.bar-label { position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 10px; color: var(--text-dim); }
+
+.heatmap { display: grid; grid-template-rows: repeat(7, 12px); grid-auto-flow: column; gap: 3px; overflow-x: auto; padding-bottom: 10px; }
+.heat-cell { width: 12px; height: 12px; border-radius: 2px; background: var(--surface-2); }
+
+/* FORMS & MODALS */
+input, select { background: var(--surface); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; margin-bottom: 15px; font-size: 16px; font-family: var(--font); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s; }
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal { background: var(--surface); width: 85%; max-width: 320px; border-radius: 20px; padding: 20px; }
+.modal-btn { width: 100%; padding: 16px; background: var(--surface-2); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+
+/* HISTORY */
+.hist-header { background: #000; padding: 10px 20px; font-weight: bold; color: var(--text-dim); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); }
+.chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; background: var(--surface-2); color: var(--text-dim); white-space: nowrap; cursor: pointer; }
+.chip.active { background: #fff; color: #000; }
 </style>
 </head>
 <body>
@@ -89,17 +106,17 @@ input, select { background: var(--surface); color: white; border: none; padding:
   <div id="v0" class="view split-view">
     <div id="sw-top" class="split-top flex-c" style="height: 60%;">
       <div style="position:absolute; top:10px; right:10px;">
-        <button onclick="sw.reset()" style="background:none; border:none; color:var(--red); font-weight:bold;">Reset</button>
+        <button onclick="app.sw.reset()" style="background:none; border:none; color:var(--red); font-weight:bold; font-size:16px;">Reset</button>
       </div>
-      <div class="mode-toggle" style="margin-top: 20px; width: 200px;">
-        <button id="sw-m-solve" class="mode-btn active" onclick="sw.setMode('Solving')">Solving</button>
-        <button id="sw-m-theory" class="mode-btn" onclick="sw.setMode('Theory')">Theory</button>
+      <div class="mode-toggle" style="margin-top: 20px; width: 220px;">
+        <button id="sw-m-solve" class="mode-btn active" onclick="app.sw.setMode('Solving')">Solving</button>
+        <button id="sw-m-theory" class="mode-btn" onclick="app.sw.setMode('Theory')">Theory</button>
       </div>
       
       <div class="flex-c w-full" style="flex:1;">
         <div id="sw-ui-solve" class="flex-c hide-th">
           <div class="text-xs">QUESTIONS</div>
-          <div id="sw-q" style="font-size: 70px; font-weight: 700; color: var(--orange); line-height: 1;">0</div>
+          <div id="sw-q" style="font-size: 80px; font-weight: 700; color: var(--orange); line-height: 1;">0</div>
         </div>
         
         <div id="sw-time" class="big-time tabular" style="margin: 10px 0;">00:00:00</div>
@@ -116,29 +133,28 @@ input, select { background: var(--surface); color: white; border: none; padding:
       </div>
 
       <div class="flex-r" style="gap: 20px; padding-bottom: 20px;">
-        <button onclick="sw.bk()" class="btn-circle bg-b"><div class="btn-inner" id="sw-b-bk">Break</div></button>
-        <button onclick="sw.lap()" class="btn-circle bg-gray hide-th"><div class="btn-inner">Next Q</div></button>
-        <button onclick="sw.toggle()" id="sw-b-main" class="btn-circle bg-g"><div class="btn-inner">Start</div></button>
+        <button onclick="app.sw.toggleBreak()" class="btn-circle bg-b"><div class="btn-inner" id="sw-b-bk">Break</div></button>
+        <button onclick="app.sw.lap()" class="btn-circle bg-gray hide-th"><div class="btn-inner">Next Q</div></button>
+        <button onclick="app.sw.toggle()" id="sw-b-main" class="btn-circle bg-g"><div class="btn-inner">Start</div></button>
       </div>
     </div>
-    
     <div id="sw-resizer" class="resizer"></div>
-    
     <div class="split-bottom no-scrollbar" id="sw-list"></div>
   </div>
 
   <div id="v1" class="view split-view hide">
     <div id="tm-top" class="split-top flex-c" style="height: 65%;">
       <div id="tm-setup" class="flex-c w-full h-full">
-         <div class="flex-r" style="gap:10px;">
-            <input type="number" id="tm-in-h" value="0" min="0" style="width:70px; text-align:center;">
-            <input type="number" id="tm-in-m" value="60" min="0" style="width:70px; text-align:center;">
+         <div class="flex-r" style="gap:10px; width:60%;">
+            <input type="number" id="tm-in-h" value="0" min="0" style="text-align:center;">
+            <span style="font-size:24px; font-weight:bold; margin-bottom:15px;">:</span>
+            <input type="number" id="tm-in-m" value="60" min="0" style="text-align:center;">
          </div>
-         <button onclick="tm.start()" class="btn-circle bg-g" style="margin-top: 20px;"><div class="btn-inner">Start</div></button>
+         <button onclick="app.tm.start()" class="btn-circle bg-g" style="margin-top: 20px;"><div class="btn-inner">Start</div></button>
       </div>
 
       <div id="tm-run" class="flex-c w-full h-full hide" style="position:relative;">
-        <button onclick="tm.reset()" style="position:absolute; top:10px; right:10px; background:none; color:var(--red); border:none; font-weight:700;">End</button>
+        <button onclick="app.tm.reset()" style="position:absolute; top:10px; right:10px; background:none; color:var(--red); border:none; font-weight:700; font-size:16px;">End</button>
         
         <div class="flex-c w-full" style="flex:1; justify-content:center;">
           <div style="position:relative; width:260px; height:260px;">
@@ -147,17 +163,17 @@ input, select { background: var(--surface); color: white; border: none; padding:
               <circle id="tm-ring" cx="130" cy="130" r="110" class="ring-prog" style="stroke-dasharray: 691; stroke-dashoffset: 0;" />
             </svg>
             <div style="position:absolute; inset:0;" class="flex-c">
-               <div class="text-xs">AVG <span id="tm-avg">00:00</span></div>
-               <div id="tm-lap" style="font-size: 50px; font-weight: 700; color:var(--orange)" class="tabular">00:00</div>
+               <div class="text-xs">AVG <span id="tm-avg" class="tabular">00:00</span></div>
+               <div id="tm-lap" style="font-size: 55px; font-weight: 700; color:var(--orange)" class="tabular">00:00</div>
                <div id="tm-rem" style="font-size: 24px;" class="tabular">00:00:00</div>
             </div>
           </div>
         </div>
 
         <div class="flex-r" style="gap: 20px; padding-bottom: 20px;">
-          <button onclick="tm.bk()" class="btn-circle bg-b"><div class="btn-inner" id="tm-b-bk">Break</div></button>
-          <button onclick="tm.lap()" class="btn-circle bg-gray"><div class="btn-inner">Next Q</div></button>
-          <button onclick="tm.toggle()" id="tm-b-main" class="btn-circle bg-g"><div class="btn-inner">Pause</div></button>
+          <button onclick="app.tm.toggleBreak()" class="btn-circle bg-b"><div class="btn-inner" id="tm-b-bk">Break</div></button>
+          <button onclick="app.tm.lap()" class="btn-circle bg-gray"><div class="btn-inner">Next Q</div></button>
+          <button onclick="app.tm.toggle()" id="tm-b-main" class="btn-circle bg-g"><div class="btn-inner">Pause</div></button>
         </div>
       </div>
     </div>
@@ -167,11 +183,16 @@ input, select { background: var(--surface); color: white; border: none; padding:
 
   <div id="v2" class="view hide flex-c" style="justify-content:flex-start;">
     <div class="mode-toggle" style="margin: 20px; width: 90%;">
-      <button class="mode-btn active" onclick="logTab(0)">Manual</button>
-      <button class="mode-btn" onclick="logTab(1)">Sleep</button>
+      <button class="mode-btn active" onclick="ui.setLogTab(0)">Timeline</button>
+      <button class="mode-btn" onclick="ui.setLogTab(1)">Manual</button>
+      <button class="mode-btn" onclick="ui.setLogTab(2)">Sleep</button>
     </div>
 
-    <div id="log-t0" class="w-full scroll-y" style="padding: 0 20px;">
+    <div id="log-t0" class="w-full scroll-y" style="padding: 0 20px; flex:1;">
+       <div class="timeline-container" id="tl-grid"></div>
+    </div>
+
+    <div id="log-t1" class="w-full scroll-y hide" style="padding: 0 20px;">
        <select id="log-cat">
           <option value="Study">Study (Solving)</option>
           <option value="Theory">Study (Theory)</option>
@@ -183,18 +204,24 @@ input, select { background: var(--surface); color: white; border: none; padding:
        <label class="text-xs">Questions Solved</label>
        <input type="number" id="log-q" value="0">
        <input type="text" id="log-note" placeholder="Note (Optional)">
-       <button onclick="logger.saveManual()" class="modal-btn bg-g" style="color:black;">Save Log</button>
+       <button onclick="app.logger.saveManual()" class="modal-btn bg-g" style="color:black;">Save Log</button>
     </div>
 
-    <div id="log-t1" class="w-full flex-c hide" style="flex:1;">
-       <svg style="width:80px; height:80px; color:var(--indigo); margin-bottom:20px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-       <div id="sleep-time" class="tabular" style="font-size: 50px; font-weight:200; margin-bottom:30px;">00:00:00</div>
-       <button id="sleep-btn" onclick="logger.toggleSleep()" class="modal-btn" style="width:200px; background:var(--purple);">Start Sleep</button>
+    <div id="log-t2" class="w-full flex-c hide" style="flex:1;">
+       <svg style="width:100px; height:100px; color:var(--indigo); margin-bottom:20px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+       <div id="sleep-time" class="tabular" style="font-size: 60px; font-weight:200; margin-bottom:40px;">00:00:00</div>
+       <button id="sleep-btn" onclick="app.logger.toggleSleep()" class="modal-btn" style="width:250px; background:var(--purple); padding:20px; border-radius:30px;">Start Sleep</button>
     </div>
   </div>
 
   <div id="v3" class="view hide scroll-y w-full" style="padding: 20px;">
-    <h1 style="font-size:24px; font-weight:700; margin-bottom:20px;">Analytics</h1>
+    <div class="flex-r" style="justify-content:space-between; margin-bottom:20px;">
+       <h1 style="font-size:28px; font-weight:700; margin:0;">Analytics</h1>
+       <div class="mode-toggle" style="width:auto;">
+          <button id="sc-week" class="mode-btn active" onclick="ui.setScope('week')">Week</button>
+          <button id="sc-month" class="mode-btn" onclick="ui.setScope('month')">Month</button>
+       </div>
+    </div>
     
     <div class="grid-2">
        <div class="card flex-c" style="align-items:flex-start;">
@@ -205,6 +232,11 @@ input, select { background: var(--surface); color: white; border: none; padding:
           <div class="text-xs">QUESTIONS</div>
           <div id="st-q" class="stat-val tabular" style="color:var(--orange)">0</div>
        </div>
+    </div>
+
+    <div class="card w-full" style="margin-bottom: 20px;">
+       <div class="text-xs">STUDY TREND</div>
+       <div id="bar-chart" class="bar-chart"></div>
     </div>
 
     <div class="card w-full flex-c" style="margin-bottom: 20px;">
@@ -218,359 +250,537 @@ input, select { background: var(--surface); color: white; border: none; padding:
              <circle id="d-break" cx="50" cy="50" r="35" class="donut-segment" stroke="var(--blue)" />
           </svg>
        </div>
-       <div id="d-legend" class="flex-r w-full" style="gap:10px; margin-top:10px; font-size:12px; flex-wrap:wrap;"></div>
+       <div id="d-legend" class="flex-r w-full" style="gap:10px; margin-top:15px; font-size:12px; flex-wrap:wrap;"></div>
     </div>
 
-    <div class="card w-full" style="margin-bottom:20px;">
-       <div class="text-xs" style="margin-bottom:10px;">HISTORY</div>
-       <div id="st-hist" class="w-full"></div>
+    <div class="card w-full" style="margin-bottom: 20px; overflow:hidden;">
+       <div class="text-xs" style="margin-bottom:10px;">CONSISTENCY HEATMAP</div>
+       <div id="heatmap" class="heatmap no-scrollbar"></div>
     </div>
-    
-    <button onclick="db.clear()" style="width:100%; padding:15px; background:var(--surface); color:var(--red); border:none; border-radius:12px; font-weight:700;">Clear All Data</button>
+
+    <button onclick="ui.nav(4)" style="width:100%; padding:15px; background:var(--surface); color:white; border:none; border-radius:12px; font-weight:700; margin-bottom:20px;">View Full History</button>
   </div>
 
-  <div class="nav-mobile">
-    <button class="nav-item active" onclick="nav(0)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Pacer</span></button>
-    <button class="nav-item" onclick="nav(1)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg><span>Timer</span></button>
-    <button class="nav-item" onclick="nav(2)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Log</span></button>
-    <button class="nav-item" onclick="nav(3)"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Stats</span></button>
+  <div id="v4" class="view hide flex-c w-full" style="justify-content:flex-start;">
+     <div class="flex-r w-full" style="padding: 20px; justify-content:space-between; background:#000;">
+        <h1 style="font-size:24px; font-weight:700; margin:0;">History</h1>
+        <button onclick="ui.nav(3)" style="background:none; border:none; color:var(--blue); font-weight:bold;">Done</button>
+     </div>
+     
+     <div class="scroll-y w-full no-scrollbar" style="padding: 0 10px 20px 10px; flex-shrink:0;">
+        <div class="flex-r" style="gap:10px; justify-content:flex-start; width:max-content;" id="hist-filters">
+           <div class="chip active" onclick="ui.filterHistory('All')">All</div>
+           <div class="chip" onclick="ui.filterHistory('Study')" style="color:var(--green)">Study</div>
+           <div class="chip" onclick="ui.filterHistory('Sleep')" style="color:var(--indigo)">Sleep</div>
+           <div class="chip" onclick="ui.filterHistory('Other')" style="color:var(--teal)">Other</div>
+           <div class="chip" onclick="ui.filterHistory('Wasted')" style="color:var(--red)">Wasted</div>
+        </div>
+     </div>
+
+     <div id="hist-list" class="w-full scroll-y flex-1 no-scrollbar"></div>
+  </div>
+
+  <div id="main-nav" class="nav-mobile">
+    <button class="nav-item active" onclick="ui.nav(0)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Pacer</span></button>
+    <button class="nav-item" onclick="ui.nav(1)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg><span>Timer</span></button>
+    <button class="nav-item" onclick="ui.nav(2)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Log</span></button>
+    <button class="nav-item" onclick="ui.nav(3)"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Stats</span></button>
   </div>
 </div>
 
 <div id="dlg" class="modal-overlay">
   <div class="modal">
-    <h3 style="text-align:center; margin-bottom:20px; color:white;">How was your break?</h3>
-    <button onclick="resolveBreak('Food')" class="modal-btn" style="color:var(--teal)">Food</button>
-    <button onclick="resolveBreak('Sleep')" class="modal-btn" style="color:var(--purple)">Nap</button>
-    <button onclick="resolveBreak('Other')" class="modal-btn">Other Break</button>
-    <button onclick="resolveBreak('Wasted')" class="modal-btn" style="color:var(--red); margin-top:10px;">Wasted / Doubt</button>
+    <h3 style="text-align:center; margin-bottom:20px; color:white;">End Break Segment</h3>
+    <button onclick="app.resolveBreak('Food')" class="modal-btn" style="color:var(--teal)">Food</button>
+    <button onclick="resolveBreak('Sleep')" class="modal-btn" style="color:var(--indigo)">Nap</button>
+    <button onclick="app.resolveBreak('Other')" class="modal-btn">Other Break</button>
+    <button onclick="app.resolveBreak('Wasted')" class="modal-btn" style="color:var(--red); margin-top:10px;">Wasted Time</button>
   </div>
 </div>
 
 <script>
-// --- UTILS ---
-const $ = id => document.getElementById(id);
-const now = () => Date.now();
-const uid = () => Math.random().toString(36).substr(2,9);
-const fmt = (s) => {
-  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=Math.floor(s%60);
-  const z=n=>n.toString().padStart(2,'0');
-  return h>0 ? `${h}:${z(m)}:${z(sec)}` : `${z(m)}:${z(sec)}`;
+// ==========================================
+// UTILITIES
+// ==========================================
+const utils = {
+  $: id => document.getElementById(id),
+  now: () => Date.now(),
+  uid: () => Math.random().toString(36).substr(2,9),
+  fmt(s) {
+    const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=Math.floor(s%60);
+    const z=n=>n.toString().padStart(2,'0');
+    return h>0 ? `${h}:${z(m)}:${z(sec)}` : `${z(m)}:${z(sec)}`;
+  },
+  fmtDur(s) {
+    const h=Math.floor(s/3600), m=Math.floor((s%3600)/60);
+    return h>0 ? `${h}h ${m}m` : `${m}m`;
+  },
+  startOfDay: (d = new Date()) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(),
+  catColor: (c) => ({'Study':'var(--green)','Sleep':'var(--indigo)','Food':'var(--teal)','Wasted':'var(--red)','Other':'var(--purple)'}[c] || 'var(--text-dim)')
 };
-const fmtDur = (s) => {
-  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60);
-  return h>0 ? `${h}h ${m}m` : `${m}m`;
-};
+const { $ } = utils;
 
-// --- SPLIT VIEW RESIZER ---
-const setupResizer = (resizerId, topId) => {
-   const resizer = $(resizerId), topPanel = $(topId);
-   let isResizing = false;
-   resizer.addEventListener('pointerdown', () => isResizing = true);
-   window.addEventListener('pointermove', e => {
-      if(!isResizing) return;
-      const h = Math.max(20, Math.min(80, (e.clientY / window.innerHeight) * 100));
-      topPanel.style.height = `${h}%`;
-   });
-   window.addEventListener('pointerup', () => isResizing = false);
-};
-setupResizer('sw-resizer', 'sw-top');
-setupResizer('tm-resizer', 'tm-top');
-
-// --- DATABASE (Matched to ActivityLog) ---
-// Schema: id, s (start), e (end), dur, cat, q (questions), doubt, break, note
-const db = {
-  logs: JSON.parse(localStorage.getItem('sc_logs') || '[]'),
-  add(l) { this.logs.unshift(l); this.save(); },
-  del(id) { this.logs = this.logs.filter(x => x.id !== id); this.save(); if($('v3').classList.contains('hide')===false) stats.render(); },
-  save() { localStorage.setItem('sc_logs', JSON.stringify(this.logs)); },
-  clear() { if(confirm('Clear all history?')) { this.logs=[]; this.save(); location.reload(); }}
-};
-
-// --- APP: STOPWATCH ---
-const sw = {
-  st: JSON.parse(localStorage.getItem('sc_sw') || '{"on":false,"bk":0,"mode":"Solving","start":0,"acc":0,"laps":[],"doubt":0,"break":0,"q":0}'),
-  save() { localStorage.setItem('sc_sw', JSON.stringify(this.st)); },
+// ==========================================
+// DATABASE (SwiftData Equivalent)
+// ==========================================
+class ActivityDatabase {
+  constructor() { this.logs = JSON.parse(localStorage.getItem('sc_logs') || '[]'); }
   
-  get tot() { return this.st.on ? this.st.acc + (now()-this.st.start)/1000 : this.st.acc; },
-  get lapT() { return this.st.laps.length ? Math.max(0, this.tot - this.st.laps[0].tot) : this.tot; },
-  get avg() { return this.st.laps.length ? this.st.laps.reduce((a,b)=>a+b.t,0)/this.st.laps.length : 0; },
+  save() { localStorage.setItem('sc_logs', JSON.stringify(this.logs)); }
+  
+  logSegment(s, e, cat, q=0, doubt=0, breakT=0, note='') {
+    if(e <= s) return;
+    this.logs.unshift({ id:utils.uid(), s, e, dur:(e-s)/1000, cat, q, doubt, break:breakT, note });
+    this.save();
+    if($('v3').classList.contains('hide')===false) app.stats.render();
+    if($('v4').classList.contains('hide')===false) ui.filterHistory();
+  }
+  
+  delete(id) { 
+    this.logs = this.logs.filter(x => x.id !== id); 
+    this.save(); 
+    app.stats.render(); ui.filterHistory();
+  }
+  
+  getLogs(fromTime, toTime) {
+    return this.logs.filter(l => l.s >= fromTime && l.s <= toTime);
+  }
+}
+
+// ==========================================
+// MODELS (ViewModels)
+// ==========================================
+class TrackerModel {
+  constructor(storageKey) {
+    this.key = storageKey;
+    this.st = JSON.parse(localStorage.getItem(this.key) || '{"on":false,"bk":0,"mode":"Solving","start":0,"acc":0,"laps":[],"doubt":0,"break":0,"q":0,"segStart":0,"segQ":0}');
+  }
+  save() { localStorage.setItem(this.key, JSON.stringify(this.st)); }
+  
+  commitSegment(isDoubt=false, isBreak=false, breakCat='Other') {
+     if(!this.st.segStart) return;
+     const dur = (utils.now() - this.st.segStart)/1000;
+     if(dur > 1) {
+        let cat = 'Study', note = this.st.mode==='Theory' ? 'Study: Theory' : 'Study: Solving';
+        if(isDoubt) { note = 'Doubt'; }
+        if(isBreak) { cat = breakCat==='Wasted'?'Wasted':(breakCat==='Sleep'?'Sleep':'Other'); note = breakCat; }
+        
+        app.db.logSegment(this.st.segStart, utils.now(), cat, this.st.mode==='Theory'?0:this.st.segQ, isDoubt?dur:0, isBreak?dur:0, note);
+     }
+     this.st.segStart = utils.now();
+     this.st.segQ = 0;
+  }
+}
+
+class StopwatchModel extends TrackerModel {
+  constructor() { super('sc_sw_v2'); }
+  get tot() { return this.st.on ? this.st.acc + (utils.now()-this.st.start)/1000 : this.st.acc; }
+  get lapT() { return this.st.laps.length ? Math.max(0, this.tot - this.st.laps[0].tot) : this.tot; }
+  get avg() { return this.st.laps.length ? this.st.laps.reduce((a,b)=>a+b.t,0)/this.st.laps.length : 0; }
 
   tick() {
-     $('sw-time').textContent = fmt(this.tot);
+     $('sw-time').textContent = utils.fmt(this.tot);
      $('sw-time').style.color = this.st.on ? '#fff' : (this.st.bk ? 'var(--blue)' : 'var(--orange)');
-     
      if(this.st.mode === 'Solving') {
         $('sw-q').textContent = this.st.q;
-        const cur = this.lapT;
-        $('sw-lap-t').textContent = fmt(cur);
-        $('sw-lap-t').style.color = (this.avg > 0 && cur > this.avg) ? 'var(--red)' : '#fff';
-        $('sw-avg-t').textContent = fmt(this.avg);
+        $('sw-lap-t').textContent = utils.fmt(this.lapT);
+        $('sw-lap-t').style.color = (this.avg > 0 && this.lapT > this.avg) ? 'var(--red)' : '#fff';
+        $('sw-avg-t').textContent = utils.fmt(this.avg);
      }
-     
-     const d = this.st.doubt + (!this.st.on && !this.st.bk && this.st.start ? (now() - this.st.start)/1000 : 0);
-     const b = this.st.break + (this.st.bk ? (now() - this.st.bk)/1000 : 0);
-     
-     $('sw-doubt-t').textContent = fmt(d);
-     $('sw-break-t').textContent = fmt(b);
-  },
+     const d = this.st.doubt + (!this.st.on && !this.st.bk && this.st.start ? (utils.now() - this.st.start)/1000 : 0);
+     const b = this.st.break + (this.st.bk ? (utils.now() - this.st.bk)/1000 : 0);
+     $('sw-doubt-t').textContent = utils.fmt(d); $('sw-break-t').textContent = utils.fmt(b);
+  }
 
   render() {
-     const bMain = $('sw-b-main'), bBk = $('sw-b-bk');
-     bMain.parentElement.className = `btn-circle ${this.st.on?'bg-r':'bg-g'}`;
-     bMain.textContent = this.st.on ? 'Pause' : (this.st.bk ? 'Resume' : 'Start');
-     bBk.textContent = this.st.bk ? 'Resume' : 'Break';
-     
+     const main = $('sw-b-main'), bk = $('sw-b-bk');
+     main.parentElement.className = `btn-circle ${this.st.on?'bg-r':'bg-g'}`;
+     main.textContent = this.st.on ? 'Pause' : (this.st.bk ? 'Resume' : 'Start');
+     bk.textContent = this.st.bk ? 'Resume' : 'Break';
      $('sw-m-solve').classList.toggle('active', this.st.mode === 'Solving');
      $('sw-m-theory').classList.toggle('active', this.st.mode === 'Theory');
-     
      document.querySelectorAll('.hide-th').forEach(el => el.style.display = (this.st.mode === 'Solving') ? '' : 'none');
+     this.renderLaps('sw-list');
+  }
 
-     $('sw-list').innerHTML = this.st.laps.map((l,i) => `
-        <div class="list-row">
-           <span style="color:var(--text-dim)">Q${this.st.laps.length-i}</span>
-           <span class="tabular ${l.t > this.avg ? 'text-red' : ''}" style="${l.t > this.avg ? 'color:var(--red)' : 'color:#fff'}">${fmt(l.t)}</span>
-        </div>
-     `).join('');
-  },
-
-  setMode(m) { this.st.mode = m; this.save(); this.render(); },
+  setMode(m) { this.commitSegment(false, false); this.st.mode = m; this.save(); this.render(); }
   
   toggle() {
      if(this.st.bk) { $('dlg').setAttribute('data-src', 'sw'); $('dlg').classList.add('open'); return; }
-     if(this.st.on) {
-        this.st.on = false; this.st.acc += (now()-this.st.start)/1000;
-     } else {
-        if(!this.st.start && this.st.acc===0) { /* First start */ } 
-        else { this.st.doubt += (now() - this.st.start)/1000; }
-        this.st.on = true;
-     }
-     this.st.start = now(); this.save(); this.render();
-  },
+     this.commitSegment(!this.st.on && this.st.start>0, false); 
+     
+     if(this.st.on) { this.st.on = false; this.st.acc += (utils.now()-this.st.start)/1000; } 
+     else { if(this.st.start>0) this.st.doubt += (utils.now()-this.st.start)/1000; this.st.on = true; }
+     
+     this.st.start = utils.now();
+     if(!this.st.segStart) this.st.segStart = utils.now();
+     this.save(); this.render();
+  }
   
-  bk() {
+  toggleBreak() {
      if(this.st.bk) { $('dlg').setAttribute('data-src', 'sw'); $('dlg').classList.add('open'); return; }
+     this.commitSegment(false, false);
      if(this.st.on) this.toggle();
-     this.st.bk = now(); this.save(); this.render();
-  },
+     this.st.bk = utils.now(); this.st.segStart = utils.now(); this.save(); this.render();
+  }
   
   lap() {
      if(!this.st.on || this.st.mode !== 'Solving') return;
-     this.st.q++;
-     this.st.laps.unshift({id:uid(), t:this.lapT, tot:this.tot});
-     this.save(); this.render();
-  },
-
-  reset() {
-     if(this.tot > 0) {
-        if(!confirm('End session and log data?')) return;
-        const note = this.st.mode === 'Theory' ? 'Study: Theory' : 'Study: Solving';
-        db.add({ id:uid(), s: now() - this.tot*1000, e: now(), dur: this.tot, cat: 'Study', q: this.st.q, doubt: this.st.doubt, break: this.st.break, note: note });
-     }
-     this.st = {on:false, bk:0, mode:this.st.mode, start:0, acc:0, laps:[], doubt:0, break:0, q:0};
+     this.st.q++; this.st.segQ++;
+     this.st.laps.unshift({id:utils.uid(), t:this.lapT, tot:this.tot});
      this.save(); this.render();
   }
-};
 
-// --- APP: TIMER ---
-const tm = {
-  st: JSON.parse(localStorage.getItem('sc_tm') || '{"on":false,"dur":0,"rem":0,"bk":0,"start":0,"laps":[],"doubt":0,"break":0,"q":0}'),
-  save() { localStorage.setItem('sc_tm', JSON.stringify(this.st)); },
-  
-  get elap() { return this.st.dur > 0 ? (this.st.dur - this.r) : 0; },
-  get r() { return this.st.on ? Math.max(0, this.st.rem - (now()-this.st.start)/1000) : this.st.rem; },
-  get lapT() { return this.st.laps.length ? Math.max(0, this.elap - this.st.laps[0].tot) : this.elap; },
-  get avg() { return this.st.laps.length ? this.st.laps.reduce((a,b)=>a+b.t,0)/this.st.laps.length : 0; },
+  reset() {
+     if(this.tot > 0 && confirm('End session?')) { this.commitSegment(false, false); }
+     this.st = {on:false, bk:0, mode:this.st.mode, start:0, acc:0, laps:[], doubt:0, break:0, q:0, segStart:0, segQ:0};
+     this.save(); this.render();
+  }
+
+  renderLaps(id) {
+     $(id).innerHTML = this.st.laps.map((l,i) => `
+        <div class="list-row swipe-row" id="lap-${l.id}">
+           <div class="swipe-bg">Del</div>
+           <div class="swipe-fg" style="padding:0 20px;">
+              <span style="color:var(--text-dim)">Q${this.st.laps.length-i}</span>
+              <span class="tabular" style="${l.t > this.avg ? 'color:var(--red)' : 'color:#fff'}">${utils.fmt(l.t)}</span>
+           </div>
+        </div>
+     `).join('');
+     ui.attachSwipes(id, this.st.laps, (lid) => { this.st.laps = this.st.laps.filter(x=>x.id!==lid); this.save(); this.render(); });
+  }
+}
+
+class TimerModel extends TrackerModel {
+  constructor() { super('sc_tm_v2'); }
+  get elap() { return this.st.dur > 0 ? (this.st.dur - this.r) : 0; }
+  get r() { return this.st.on ? Math.max(0, this.st.rem - (utils.now()-this.st.start)/1000) : this.st.rem; }
+  get lapT() { return this.st.laps.length ? Math.max(0, this.elap - this.st.laps[0].tot) : this.elap; }
+  get avg() { return this.st.laps.length ? this.st.laps.reduce((a,b)=>a+b.t,0)/this.st.laps.length : 0; }
 
   tick() {
      if(this.st.dur === 0) { $('tm-setup').classList.remove('hide'); $('tm-run').classList.add('hide'); return; }
      $('tm-setup').classList.add('hide'); $('tm-run').classList.remove('hide');
-     
-     $('tm-rem').textContent = fmt(this.r);
-     
-     const cur = this.lapT;
-     $('tm-lap').textContent = fmt(cur);
-     $('tm-lap').style.color = (this.avg > 0 && cur > this.avg && this.st.on) ? 'var(--red)' : (this.st.on ? '#fff' : 'var(--orange)');
-     $('tm-avg').textContent = fmt(this.avg);
-     
+     $('tm-rem').textContent = utils.fmt(this.r);
+     $('tm-lap').textContent = utils.fmt(this.lapT);
+     $('tm-lap').style.color = (this.avg > 0 && this.lapT > this.avg && this.st.on) ? 'var(--red)' : (this.st.on ? '#fff' : 'var(--orange)');
+     $('tm-avg').textContent = utils.fmt(this.avg);
      const p = this.st.dur > 0 ? this.r/this.st.dur : 0;
      $('tm-ring').style.strokeDashoffset = 691 - (p * 691);
      $('tm-ring').style.stroke = this.st.on ? 'var(--orange)' : (this.st.bk ? 'var(--blue)' : 'var(--red)');
-  },
+     
+     if(this.st.on && this.r <= 0) { this.reset(true); } // Auto end
+  }
 
   render() {
-     const bMain = $('tm-b-main'), bBk = $('tm-b-bk');
-     bMain.parentElement.className = `btn-circle ${this.st.on?'bg-r':'bg-g'}`;
-     bMain.textContent = this.st.on ? 'Pause' : (this.st.bk ? 'Resume' : 'Start');
-     bBk.textContent = this.st.bk ? 'Resume' : 'Break';
-
-     $('tm-list').innerHTML = this.st.laps.map((l,i) => `
-        <div class="list-row">
-           <span style="color:var(--text-dim)">Q${this.st.laps.length-i}</span>
-           <span class="tabular ${l.t > this.avg ? 'text-red' : ''}" style="${l.t > this.avg ? 'color:var(--red)' : 'color:#fff'}">${fmt(l.t)}</span>
-        </div>
-     `).join('');
-  },
+     const main = $('tm-b-main'), bk = $('tm-b-bk');
+     main.parentElement.className = `btn-circle ${this.st.on?'bg-r':'bg-g'}`;
+     main.textContent = this.st.on ? 'Pause' : (this.st.bk ? 'Resume' : 'Start');
+     bk.textContent = this.st.bk ? 'Resume' : 'Break';
+     this.renderLaps('tm-list');
+  }
 
   start() {
      const h = parseInt($('tm-in-h').value)||0, m = parseInt($('tm-in-m').value)||0;
+     if(h===0 && m===0) return;
      const sec = h*3600 + m*60;
-     if(sec===0) return;
-     this.st = {on:true, dur:sec, rem:sec, start:now(), bk:0, laps:[], doubt:0, break:0, q:0};
+     this.st = {on:true, dur:sec, rem:sec, start:utils.now(), bk:0, laps:[], doubt:0, break:0, q:0, segStart:utils.now(), segQ:0};
      this.save(); this.render();
-  },
+  }
 
   toggle() {
      if(this.st.bk) { $('dlg').setAttribute('data-src', 'tm'); $('dlg').classList.add('open'); return; }
-     if(this.st.on) {
-        this.st.on = false; this.st.rem -= (now()-this.st.start)/1000;
-     } else {
-        this.st.doubt += (now() - this.st.start)/1000;
-        this.st.on = true;
-     }
-     this.st.start = now(); this.save(); this.render();
-  },
+     this.commitSegment(!this.st.on, false);
+     
+     if(this.st.on) { this.st.on = false; this.st.rem -= (utils.now()-this.st.start)/1000; } 
+     else { this.st.doubt += (utils.now()-this.st.start)/1000; this.st.on = true; }
+     
+     this.st.start = utils.now(); this.save(); this.render();
+  }
 
-  bk() {
+  toggleBreak() {
      if(this.st.bk) { $('dlg').setAttribute('data-src', 'tm'); $('dlg').classList.add('open'); return; }
+     this.commitSegment(false, false);
      if(this.st.on) this.toggle();
-     this.st.bk = now(); this.save(); this.render();
-  },
+     this.st.bk = utils.now(); this.st.segStart = utils.now(); this.save(); this.render();
+  }
 
   lap() {
      if(!this.st.on) return;
-     this.st.q++;
-     this.st.laps.unshift({id:uid(), t:this.lapT, tot:this.elap});
+     this.st.q++; this.st.segQ++;
+     this.st.laps.unshift({id:utils.uid(), t:this.lapT, tot:this.elap});
      this.save(); this.render();
-  },
+  }
 
-  reset() {
-     if(confirm('End exam and log data?')) {
-        db.add({ id:uid(), s: now() - this.elap*1000, e: now(), dur: this.elap, cat: 'Study', q: this.st.q, doubt: this.st.doubt, break: this.st.break, note: 'Exam Timer' });
-     }
+  reset(auto=false) {
+     if(auto || confirm('End exam?')) { this.commitSegment(false, false); }
      this.st.dur = 0; this.save(); this.tick(); this.render();
   }
-};
-
-// --- GLOBAL BREAK RESOLVE ---
-function resolveBreak(cat) {
-  $('dlg').classList.remove('open');
-  const src = $('dlg').getAttribute('data-src');
-  const obj = src === 'sw' ? sw : tm;
   
-  if(obj.st.bk) {
-     const breakDur = (now() - obj.st.bk)/1000;
-     obj.st.break += breakDur;
-     db.add({ id:uid(), s: obj.st.bk, e: now(), dur: breakDur, cat: cat==='Wasted'?'Wasted':(cat==='Sleep'?'Sleep':'Other'), q:0, doubt:0, break:0, note: cat });
-     obj.st.bk = 0; 
-     obj.st.start = now(); 
-     obj.st.on = true; 
-     obj.save(); obj.render();
+  renderLaps(id) {
+     $(id).innerHTML = this.st.laps.map((l,i) => `
+        <div class="list-row swipe-row" id="lap-${l.id}">
+           <div class="swipe-bg">Del</div>
+           <div class="swipe-fg" style="padding:0 20px;">
+              <span style="color:var(--text-dim)">Q${this.st.laps.length-i}</span>
+              <span class="tabular" style="${l.t > this.avg ? 'color:var(--red)' : 'color:#fff'}">${utils.fmt(l.t)}</span>
+           </div>
+        </div>
+     `).join('');
+     ui.attachSwipes(id, this.st.laps, (lid) => { this.st.laps = this.st.laps.filter(x=>x.id!==lid); this.save(); this.render(); });
   }
 }
 
-// --- LOGGER ---
-const logger = {
-   sleepT: parseInt(localStorage.getItem('sc_sleep')||'0'),
-   saveManual() {
-      const dur = parseInt($('log-dur').value) * 60;
-      const catVal = $('log-cat').value;
-      const q = parseInt($('log-q').value) || 0;
-      const e = now(); const s = e - (dur*1000);
-      let cat = 'Study', note = $('log-note').value;
-      if(catVal === 'Food' || catVal === 'Other') cat = 'Other';
-      if(catVal === 'Study') note = 'Study: Solving - ' + note;
-      if(catVal === 'Theory') note = 'Study: Theory - ' + note;
+// ==========================================
+// APP CONTROLLER
+// ==========================================
+const app = {
+   db: new ActivityDatabase(),
+   sw: new StopwatchModel(),
+   tm: new TimerModel(),
+   
+   init() {
+      this.sw.render(); this.tm.render(); ui.renderTimeline();
+      setInterval(() => { this.sw.tick(); this.tm.tick(); this.logger.tick(); }, 100);
       
-      db.add({id:uid(), s, e, dur, cat, q, doubt:0, break:0, note});
-      alert('Logged successfully.');
-   },
-   toggleSleep() {
-      if(this.sleepT > 0) {
-         db.add({id:uid(), s:this.sleepT, e:now(), dur:(now()-this.sleepT)/1000, cat:'Sleep', q:0, doubt:0, break:0, note:'Tracked Sleep'});
-         this.sleepT = 0; localStorage.setItem('sc_sleep', '0');
-         $('sleep-btn').textContent = 'Start Sleep';
-         $('sleep-btn').style.background = 'var(--purple)';
-      } else {
-         this.sleepT = now(); localStorage.setItem('sc_sleep', this.sleepT.toString());
-         $('sleep-btn').textContent = 'Wake Up';
-         $('sleep-btn').style.background = 'var(--orange)';
-      }
-   },
-   tick() {
-      if(this.sleepT > 0) $('sleep-time').textContent = fmt((now()-this.sleepT)/1000);
-   }
-};
-
-function logTab(i) {
-   $('log-t0').classList.toggle('hide', i!==0);
-   $('log-t1').classList.toggle('hide', i!==1);
-   document.querySelectorAll('#v2 .mode-btn').forEach((b,x) => b.classList.toggle('active', x===i));
-}
-
-// --- STATS ---
-const stats = {
-   render() {
-      let tStudy=0, tQ=0, tDoubt=0, tBreak=0, tSolve=0, tTheory=0;
-      
-      let html = '';
-      db.logs.forEach(l => {
-         if(l.cat==='Study') {
-            tStudy += l.dur; tQ += l.q;
-            if(l.note && l.note.includes('Theory')) tTheory += l.dur; else tSolve += l.dur;
+      // Keyboard Shortcuts
+      document.addEventListener('keydown', (e) => {
+         if($('v0').classList.contains('hide')===false) {
+            if(e.code==='Space') { e.preventDefault(); this.sw.toggle(); }
+            if(e.code==='Enter') { e.preventDefault(); this.sw.lap(); }
+            if(e.key.toLowerCase()==='b') { e.preventDefault(); this.sw.toggleBreak(); }
+         } else if($('v1').classList.contains('hide')===false) {
+            if(e.code==='Space') { e.preventDefault(); this.tm.toggle(); }
+            if(e.code==='Enter') { e.preventDefault(); this.tm.lap(); }
+            if(e.key.toLowerCase()==='b') { e.preventDefault(); this.tm.toggleBreak(); }
          }
-         tDoubt += l.doubt || 0;
-         tBreak += l.break || 0;
-         if(l.cat!=='Study') tBreak += l.dur;
-         
-         const d = new Date(l.s);
-         html += `<div class="list-row" style="padding:10px; font-size:14px;">
-            <div><span style="color:${l.cat==='Study'?'var(--green)':'var(--blue)'}; font-weight:bold">${l.cat}</span> <span style="color:var(--text-dim); font-size:12px;">${d.toLocaleDateString()}</span><br>
-            <span style="color:var(--text-dim); font-size:12px">${l.note||''}</span></div>
-            <div style="text-align:right;">${fmtDur(l.dur)}<br><button onclick="db.del('${l.id}')" style="background:none; border:none; color:var(--red); font-size:10px;">Del</button></div>
-         </div>`;
       });
       
-      $('st-study').textContent = fmtDur(tStudy);
-      $('st-q').textContent = tQ;
-      $('st-hist').innerHTML = html || '<div style="color:var(--text-dim); padding:10px;">No logs yet.</div>';
+      window.addEventListener('beforeunload', () => { this.sw.save(); this.tm.save(); });
+   },
+   
+   resolveBreak(cat) {
+      $('dlg').classList.remove('open');
+      const src = $('dlg').getAttribute('data-src');
+      const obj = src === 'sw' ? this.sw : this.tm;
       
-      // Render Donut
-      const total = tSolve + tTheory + tDoubt + tBreak || 1;
-      const c = 220; // 2 * pi * 35 approx 219.9
-      const oS = (tSolve/total)*c, oTh = (tTheory/total)*c, oD = (tDoubt/total)*c, oB = (tBreak/total)*c;
-      
-      $('d-solve').style.strokeDasharray = `${oS} ${c}`;
-      $('d-theory').style.strokeDasharray = `${oTh} ${c}`; $('d-theory').style.strokeDashoffset = -oS;
-      $('d-doubt').style.strokeDasharray = `${oD} ${c}`; $('d-doubt').style.strokeDashoffset = -(oS+oTh);
-      $('d-break').style.strokeDasharray = `${oB} ${c}`; $('d-break').style.strokeDashoffset = -(oS+oTh+oD);
-      
-      $('d-legend').innerHTML = `
-         <span style="color:var(--green)">Solve: ${fmtDur(tSolve)}</span>
-         <span style="color:var(--teal)">Theory: ${fmtDur(tTheory)}</span>
-         <span style="color:var(--orange)">Doubt: ${fmtDur(tDoubt)}</span>
-         <span style="color:var(--blue)">Break: ${fmtDur(tBreak)}</span>
-      `;
+      if(obj.st.bk) {
+         obj.commitSegment(false, true, cat);
+         obj.st.break += (utils.now() - obj.st.bk)/1000;
+         obj.st.bk = 0; obj.st.start = utils.now(); obj.st.on = true; 
+         obj.st.segStart = utils.now();
+         obj.save(); obj.render();
+      }
+   },
+   
+   logger: {
+      sleepT: parseInt(localStorage.getItem('sc_sleep')||'0'),
+      saveManual() {
+         const dur = parseInt($('log-dur').value) * 60;
+         const catVal = $('log-cat').value;
+         const e = utils.now(); const s = e - (dur*1000);
+         let cat = 'Study', note = $('log-note').value;
+         if(catVal === 'Food' || catVal === 'Other') cat = 'Other';
+         if(catVal === 'Study') note = 'Study: Solving - ' + note;
+         if(catVal === 'Theory') note = 'Study: Theory - ' + note;
+         
+         app.db.logSegment(s, e, cat, parseInt($('log-q').value)||0, 0, 0, note);
+         $('log-note').value=''; alert('Saved!');
+      },
+      toggleSleep() {
+         if(this.sleepT > 0) {
+            app.db.logSegment(this.sleepT, utils.now(), 'Sleep', 0, 0, 0, 'Tracked Sleep');
+            this.sleepT = 0; localStorage.setItem('sc_sleep', '0');
+            $('sleep-btn').textContent = 'Start Sleep'; $('sleep-btn').style.background = 'var(--purple)';
+         } else {
+            this.sleepT = utils.now(); localStorage.setItem('sc_sleep', this.sleepT.toString());
+            $('sleep-btn').textContent = 'Wake Up'; $('sleep-btn').style.background = 'var(--orange)';
+         }
+      },
+      tick() { if(this.sleepT > 0) $('sleep-time').textContent = utils.fmt((utils.now()-this.sleepT)/1000); }
+   },
+   
+   stats: {
+      scope: 'week',
+      render() {
+         const now = utils.now(), cal = new Date();
+         let startT = utils.startOfDay(cal);
+         if(this.scope==='week') startT -= 6*86400000;
+         if(this.scope==='month') startT -= 29*86400000;
+         
+         const logs = app.db.getLogs(startT, now);
+         
+         let tStudy=0, tQ=0, tDoubt=0, tBreak=0, tSolve=0, tTheory=0;
+         const dayMap = {}; // for bar chart & heatmap
+         
+         logs.forEach(l => {
+            const d = utils.startOfDay(new Date(l.s));
+            if(!dayMap[d]) dayMap[d] = {study:0};
+            
+            if(l.cat==='Study') {
+               tStudy += l.dur; tQ += l.q; dayMap[d].study += l.dur;
+               if(l.note && l.note.includes('Theory')) tTheory += l.dur; else tSolve += l.dur;
+            }
+            tDoubt += l.doubt || 0;
+            if(l.cat!=='Study') tBreak += l.dur; else tBreak += l.break || 0;
+         });
+         
+         $('st-study').textContent = utils.fmtDur(tStudy); $('st-q').textContent = tQ;
+         
+         // Bar Chart (Last 7 Days)
+         let barHTML = '';
+         for(let i=6; i>=0; i--) {
+            const d = utils.startOfDay(new Date(now - i*86400000));
+            const hrs = (dayMap[d]?.study || 0) / 3600;
+            const hPct = Math.min(100, (hrs / 12) * 100); // Scale to 12 hrs max visually
+            const lbl = new Date(d).toLocaleDateString('en-US', {weekday:'short'}).charAt(0);
+            barHTML += `<div class="bar-col"><div class="bar-fill" style="height:${hPct}%; background:var(--green)"></div><div class="bar-label">${lbl}</div></div>`;
+         }
+         $('bar-chart').innerHTML = barHTML;
+         
+         // Donut
+         const total = tSolve + tTheory + tDoubt + tBreak || 1;
+         const c = 220;
+         const oS=(tSolve/total)*c, oTh=(tTheory/total)*c, oD=(tDoubt/total)*c, oB=(tBreak/total)*c;
+         $('d-solve').style.strokeDasharray=`${oS} ${c}`;
+         $('d-theory').style.strokeDasharray=`${oTh} ${c}`; $('d-theory').style.strokeDashoffset=-oS;
+         $('d-doubt').style.strokeDasharray=`${oD} ${c}`; $('d-doubt').style.strokeDashoffset=-(oS+oTh);
+         $('d-break').style.strokeDasharray=`${oB} ${c}`; $('d-break').style.strokeDashoffset=-(oS+oTh+oD);
+         
+         $('d-legend').innerHTML = `<span style="color:var(--green)">Solve: ${utils.fmtDur(tSolve)}</span><span style="color:var(--teal)">Theory: ${utils.fmtDur(tTheory)}</span><span style="color:var(--orange)">Doubt: ${utils.fmtDur(tDoubt)}</span><span style="color:var(--blue)">Break: ${utils.fmtDur(tBreak)}</span>`;
+         
+         // Heatmap (Last 90 days)
+         let heatHTML = '';
+         for(let i=89; i>=0; i--) {
+            const d = utils.startOfDay(new Date(now - i*86400000));
+            const hrs = (dayMap[d]?.study || 0) / 3600;
+            let color = 'var(--surface-2)';
+            if(hrs>0) color = 'rgba(50,215,75,0.3)';
+            if(hrs>2) color = 'rgba(50,215,75,0.6)';
+            if(hrs>5) color = 'rgba(50,215,75,0.8)';
+            if(hrs>8) color = 'var(--green)';
+            heatHTML += `<div class="heat-cell" style="background:${color}"></div>`;
+         }
+         $('heatmap').innerHTML = heatHTML;
+      }
    }
 };
 
-// --- NAVIGATION ---
-function nav(i) {
-  document.querySelectorAll('.view').forEach((v,x) => v.classList.toggle('hide', x!==i));
-  document.querySelectorAll('.nav-item').forEach((b,x) => b.classList.toggle('active', x===i));
-  if(i===3) stats.render();
-}
+// ==========================================
+// UI & DOM CONTROLLER
+// ==========================================
+const ui = {
+  nav(i) {
+    document.querySelectorAll('.view').forEach((v,x) => v.classList.toggle('hide', x!==i));
+    document.querySelectorAll('#main-nav .nav-item').forEach((b,x) => b.classList.toggle('active', x===i));
+    if(i===2) this.renderTimeline();
+    if(i===3) app.stats.render();
+    if(i===4) { $('main-nav').classList.add('hide'); this.filterHistory(); } 
+    else { $('main-nav').classList.remove('hide'); }
+  },
+  
+  setLogTab(i) {
+    $('log-t0').classList.toggle('hide', i!==0); $('log-t1').classList.toggle('hide', i!==1); $('log-t2').classList.toggle('hide', i!==2);
+    document.querySelectorAll('#v2 .mode-btn').forEach((b,x) => b.classList.toggle('active', x===i));
+    if(i===0) this.renderTimeline();
+  },
+  
+  setScope(s) {
+    app.stats.scope = s;
+    $('sc-week').classList.toggle('active', s==='week'); $('sc-month').classList.toggle('active', s==='month');
+    app.stats.render();
+  },
+  
+  // Custom Drag Resizers
+  setupResizer(resizerId, topId) {
+     const resizer = $(resizerId), topPanel = $(topId);
+     let isResizing = false;
+     resizer.addEventListener('pointerdown', () => isResizing = true);
+     window.addEventListener('pointermove', e => {
+        if(!isResizing) return;
+        topPanel.style.height = `${Math.max(20, Math.min(80, (e.clientY / window.innerHeight) * 100))}%`;
+     });
+     window.addEventListener('pointerup', () => isResizing = false);
+  },
+  
+  // Custom Swipe to Delete
+  attachSwipes(containerId, list, onDelete) {
+     const touch = { x:0 };
+     document.querySelectorAll(`#${containerId} .swipe-row`).forEach(el => {
+        const fg = el.querySelector('.swipe-fg');
+        const id = el.id.replace('lap-','');
+        el.addEventListener('touchstart', e => touch.x = e.touches[0].clientX);
+        el.addEventListener('touchmove', e => {
+           const diff = Math.min(0, Math.max(-100, e.touches[0].clientX - touch.x));
+           fg.style.transform = `translateX(${diff}px)`;
+        });
+        el.addEventListener('touchend', e => {
+           if(e.changedTouches[0].clientX - touch.x < -60) onDelete(id);
+           fg.style.transform = `translateX(0)`;
+        });
+     });
+  },
+  
+  // Timeline Renderer
+  renderTimeline() {
+     const sod = utils.startOfDay();
+     const logs = app.db.getLogs(sod, utils.now());
+     
+     let html = '';
+     for(let i=0; i<24; i++) {
+        const h = i>12 ? i-12 : (i===0?12:i); const ampm = i>=12 ? 'PM' : 'AM';
+        html += `<div class="tl-hour">${h} ${ampm}</div>`;
+     }
+     
+     logs.forEach(l => {
+        const top = ((l.s - sod) / 86400000) * 100;
+        const h = Math.max(0.5, (l.dur*1000 / 86400000) * 100);
+        const c = utils.catColor(l.cat);
+        html += `<div class="tl-block" style="top:${top}%; height:${h}%; background:${c}40; border-color:${c}; color:${c}">${l.cat}</div>`;
+     });
+     
+     $('tl-grid').innerHTML = html;
+     $('tl-grid').scrollTop = ((utils.now() - sod) / 86400000) * 1440 - 100; // Auto scroll to current time
+  },
+  
+  // History Grouping
+  filterHistory(cat = 'All') {
+     document.querySelectorAll('#hist-filters .chip').forEach(c => c.classList.toggle('active', c.innerText === cat));
+     
+     let filtered = app.db.logs;
+     if(cat !== 'All') filtered = filtered.filter(l => l.cat === cat);
+     
+     const grouped = {};
+     filtered.forEach(l => {
+        const d = new Date(l.s).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+        if(!grouped[d]) grouped[d] = [];
+        grouped[d].push(l);
+     });
+     
+     let html = '';
+     Object.keys(grouped).forEach(date => {
+        html += `<div class="hist-header">${date}</div>`;
+        grouped[date].forEach(l => {
+           const c = utils.catColor(l.cat);
+           const time = new Date(l.s).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+           html += `<div class="list-row" style="font-size:14px;">
+              <div><span style="color:${c}; font-weight:bold">${l.cat}</span> <span style="color:var(--text-dim); font-size:12px;">${time}</span><br>
+              <span style="color:var(--text-dim); font-size:12px">${l.note||''}</span></div>
+              <div style="text-align:right;">${utils.fmtDur(l.dur)}<br>
+                 <span style="color:var(--orange); font-size:10px;">${l.q>0 ? l.q+' Qs' : ''}</span>
+                 <button onclick="app.db.delete('${l.id}')" style="background:none; border:none; color:var(--red); font-size:10px; margin-left:10px;">Del</button>
+              </div>
+           </div>`;
+        });
+     });
+     $('hist-list').innerHTML = html || '<div style="color:var(--text-dim); padding:20px; text-align:center;">No logs found.</div>';
+  }
+};
 
 // --- INIT ---
-sw.render(); tm.render();
-if(logger.sleepT > 0) { logTab(1); $('sleep-btn').textContent = 'Wake Up'; $('sleep-btn').style.background = 'var(--orange)'; }
-
-setInterval(() => {
-  sw.tick(); tm.tick(); logger.tick();
-}, 100);
-
-// Background Save on Unload (Backup)
-window.addEventListener('beforeunload', () => { sw.save(); tm.save(); });
+ui.setupResizer('sw-resizer', 'sw-top'); ui.setupResizer('tm-resizer', 'tm-top');
+if(app.logger.sleepT > 0) { ui.setLogTab(2); $('sleep-btn').textContent = 'Wake Up'; $('sleep-btn').style.background = 'var(--orange)'; }
+app.init();
 
 </script>
 </body>
